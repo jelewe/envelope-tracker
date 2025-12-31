@@ -24,6 +24,11 @@ export function currentYYYYMM(): YYYYMM {
   return `${y}-${m}` as YYYYMM;
 }
 
+export function formatMMYY(month: YYYYMM): string {
+  const [year, m] = month.split("-");
+  return `${m}/${year.slice(2)}`;
+}
+
 export function todayISODate(): ISODate {
   const d = new Date();
   const y = d.getFullYear();
