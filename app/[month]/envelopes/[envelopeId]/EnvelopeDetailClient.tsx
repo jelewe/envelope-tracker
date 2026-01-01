@@ -167,9 +167,7 @@ export default function EnvelopeDetailClient({
                     month={month}
                     transactions={view.txs}
                     onDelete={(txId) => {
-                        // Either is fine; commit is safer if you later navigate quickly
                         commit((d) => deleteTransaction(d, txId));
-                        // or: update((d) => deleteTransaction(d, txId));
                     }}
                     />
 
