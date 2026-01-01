@@ -19,6 +19,7 @@ export default function NewTransactionClient({ month }: { month: YYYYMM }) {
       .sort((a, b) => a.sortOrder - b.sortOrder);
   }, [doc]);
 
+  const canTransfer = categories.length >= 2;
   const [kind, setKind] = useState<"expense" | "transfer">("expense");
   const [date, setDate] = useState(todayISODate());
   const [amount, setAmount] = useState("");
@@ -53,8 +54,13 @@ export default function NewTransactionClient({ month }: { month: YYYYMM }) {
                 disabled={!editable}
               >
                 <option value="expense">Expense</option>
-                <option value="transfer">Transfer</option>
+                <option value="transfer" disabled={!canTransfer}>Transfer</option>
               </select>
+              {!canTransfer && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Need at least 2 envelopes for transfers.
+                </p>
+              )}
             </div>
 
             <div className="flex-1">
@@ -89,15 +95,32 @@ export default function NewTransactionClient({ month }: { month: YYYYMM }) {
                   className="w-full border rounded px-3 py-2 text-gray-600"
                   value={envelopeId}
                   onChange={(e) => setEnvelopeId(e.target.value)}
-                  disabled={!editable}
+                  disabled={!editable || categories.length === 0}
                 >
-                  <option value="">Select…</option>
+                  <option value="">
+                    {categories.length === 0 ? "No envelopes yet…" : "Select…"}
+                  </option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
                   ))}
                 </select>
+
+                {categories.length === 0 && (
+                  <div className= "p-3">
+                    <button
+                      type="button"
+                      className="mt-2 px-4 py-2 rounded bg-black text-white disabled:opacity-40"
+                      disabled={!editable}
+                      onClick={() => {
+                        window.location.href = `/${month}/envelopes/new`;
+                      }}
+                    >
+                      Add your first envelope
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-3">
@@ -122,6 +145,7 @@ export default function NewTransactionClient({ month }: { month: YYYYMM }) {
               </div>
             </>
           ) : (
+            // Transfer
             <>
               <div className="flex gap-3">
                 <div className="flex-1">
@@ -182,6 +206,10 @@ export default function NewTransactionClient({ month }: { month: YYYYMM }) {
 
                 const amountCents = parseDollarsToCents(amount);
                 if (amountCents <= 0) throw new Error("Amount must be greater than 0.");
+
+                if (kind === "transfer" && !canTransfer) {
+                  throw new Error("Need at least 2 envelopes for transfers.");
+                }
 
                 let tx: Transaction;
 

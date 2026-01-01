@@ -4,17 +4,30 @@ import Link from "next/link";
 import { BudgetDocV1, YYYYMM } from "@/types/budget";
 import { getAllocationCents, getRemainingCents } from "@/lib/selectors";
 import { Tracker } from "@/components/Tracker";
+import { currentYYYYMM } from "@/lib/date";
 
 export function EnvelopeList({ doc, month }: { doc: BudgetDocV1; month: YYYYMM }) {
   const categories = [...doc.categories]
     .filter(c => !c.archived)
     .sort((a, b) => a.sortOrder - b.sortOrder);
+  const editable = month === currentYYYYMM();
 
   if (!categories.length) {
     return (
       <div className="border rounded p-4 bg-white">
         <p className="text-emerald-700">No envelopes yet.</p>
-        <p className="text-sm text-emerald-500 mt-1">Use “Add Envelope” to create one.</p>
+        <div className= "p-3">
+                    <button
+                      type="button"
+                      className="mt-2 px-4 py-2 rounded bg-black text-white disabled:opacity-40"
+                      disabled={!editable}
+                      onClick={() => {
+                        window.location.href = `/${month}/envelopes/new`;
+                      }}
+                    >
+                      { editable ? "Add your first envelope" : "Past months are read-only" }
+                    </button>
+                  </div>
       </div>
     );
   }
