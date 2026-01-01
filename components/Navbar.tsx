@@ -174,6 +174,7 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
               <div className="mt-6 pt-4 border-t">
                 <div className="text-sm text-gray-600 mb-2">Month</div>
                 <input
+                  key={draftMonth}  // force DOM remount to prevent stale state in PWA reload
                   className="w-full border rounded px-2 py-2 text-gray-700"
                   type="month"
                   value={draftMonth}

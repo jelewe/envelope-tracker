@@ -25,7 +25,7 @@ export function EnvelopeList({ doc, month }: { doc: BudgetDocV1; month: YYYYMM }
               window.location.href = `/${month}/envelopes/new`;
             }}
           >
-            { editable ? "Add your first envelope" : "Past months are read-only" }
+            { editable ? "Add your first envelope" : "Only current month is editable" }
           </button>
         </div>
       </div>
