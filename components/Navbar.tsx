@@ -14,31 +14,16 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
   const current = currentYYYYMM();
   const [open, setOpen] = useState(false);
   const drawerId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
-
-  // Lock body scroll while drawer open
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+  const [draftMonth, setDraftMonth] = useState<YYYYMM>(month);
 
   const goToMonth = (next: YYYYMM) => {
     setOpen(false);
     window.location.href = `/${next}/dashboard`;
+  };
+
+  const closeDrawer = () => {
+    setDraftMonth(month); // reset to current route month
+    setOpen(false);
   };
 
   const LinkItem = ({
@@ -51,11 +36,36 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
     <Link
       className="text-sm text-gray-700 hover:text-gray-900"
       href={href}
-      onClick={() => setOpen(false)}
+      onClick={closeDrawer}
     >
       {children}
     </Link>
   );
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDrawer();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    setDraftMonth(month);
+  }, [month]);
+
+  // Lock body scroll while drawer open
+  useEffect(() => {
+    if (!open) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   return (
     <div className="w-full border-b bg-white">
@@ -131,7 +141,7 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
             type="button"
             className="absolute inset-0 bg-black/30"
             aria-label="Close menu"
-            onClick={() => setOpen(false)}
+            onClick={closeDrawer}
           />
 
           {/* Panel */}
@@ -146,7 +156,7 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
               <button
                 type="button"
                 className="border rounded px-3 py-2 text-sm text-gray-700"
-                onClick={() => setOpen(false)}
+                onClick={closeDrawer}
                 aria-label="Close menu"
               >
                 ✕
@@ -163,15 +173,23 @@ export function Navbar({ month, hideMonthPicker = false }: NavbarProps) {
             {!hideMonthPicker && (
               <div className="mt-6 pt-4 border-t">
                 <div className="text-sm text-gray-600 mb-2">Month</div>
-
-                {/* Keep native month input here (it can say "December 2025"—drawer has room) */}
                 <input
                   className="w-full border rounded px-2 py-2 text-gray-700"
                   type="month"
-                  value={month}
-                  onChange={(e) => goToMonth(e.target.value as YYYYMM)}
+                  value={draftMonth}
+                  onChange={(e) => setDraftMonth(e.target.value as YYYYMM)}
                   aria-label="Select month"
                 />
+
+                {draftMonth !== month && (
+                  <button
+                    type="button"
+                    className="mt-2 w-full px-4 py-2 rounded bg-black text-white"
+                    onClick={() => goToMonth(draftMonth)}
+                  >
+                    Apply
+                  </button>
+                )}
 
                 {month !== current && (
                   <div className="text-xs text-gray-500 mt-2">Viewing a past month (read-only)</div>
